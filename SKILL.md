@@ -8,6 +8,13 @@ description: Use when you need to manage GitHub repos, issues, PRs, releases, an
 ## Default rule
 1) Try `gh <feature>` first. 2) If unsupported, use `gh api` with the smallest, most explicit query/mutation.
 
+## Prefer one-shot commands
+Don't chain git + gh when a single `gh` command does the job:
+- Open a PR for the current branch → `gh pr create -t "..." -b "..."` (auto-pushes; no separate `git push -u`)
+- Wait on CI → `gh pr checks --watch [-i SECONDS]` (no manual polling loops)
+- Get only the data you need → add `--json <fields> --jq '<filter>'` to most `gh` commands instead of piping into `jq`
+See `reference/recipes.md` for full forms.
+
 ## Guardrails
 - Always target explicitly: `-R OWNER/REPO` or an explicit URL.
 - Read state first, then mutate.
@@ -20,7 +27,7 @@ description: Use when you need to manage GitHub repos, issues, PRs, releases, an
 - REST patterns: `reference/rest.md`
 - GraphQL patterns + node IDs: `reference/graphql.md`
 - Projects v2 (add item + set fields, including “Issue Type”): `reference/projects-v2.md`
-- Copy/paste recipes: `reference/recipes.md`
+- Copy/paste recipes (auth, issues, **fast PR create**, **CI/check polling with `--watch` + `--json`/`--jq`**): `reference/recipes.md`
 - Scripts:
   - List fields: `scripts/project_list_fields.sh`
   - Add item: `scripts/project_add_item.sh`
