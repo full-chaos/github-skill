@@ -31,13 +31,13 @@ copy/paste recipes that avoid unnecessary `jq` pipes and polling loops.
 ### Claude Code — per user
 
 ```bash
-git clone https://github.com/full-chaos/github-skill.git ~/.claude/skills/github-gh
+git clone https://github.com/full-chaos/github-gh.git ~/.claude/skills/github-gh
 ```
 
 Or symlink an existing checkout:
 
 ```bash
-ln -s /path/to/github-skill ~/.claude/skills/github-gh
+ln -s /path/to/github-gh ~/.claude/skills/github-gh
 ```
 
 Claude Code auto-discovers skills under `~/.claude/skills/`. The `description` field in
@@ -46,7 +46,7 @@ Claude Code auto-discovers skills under `~/.claude/skills/`. The `description` f
 ### Claude Code — per project
 
 ```bash
-git clone https://github.com/full-chaos/github-skill.git <repo>/.claude/skills/github-gh
+git clone https://github.com/full-chaos/github-gh.git <repo>/.claude/skills/github-gh
 ```
 
 Commit it for team-wide use or add to `.gitignore` if it stays personal.
@@ -56,13 +56,13 @@ Commit it for team-wide use or add to `.gitignore` if it stays personal.
 Same `SKILL.md` spec — drop into Codex's skill path:
 
 ```bash
-git clone https://github.com/full-chaos/github-skill.git ~/.codex/skills/github-gh
+git clone https://github.com/full-chaos/github-gh.git ~/.codex/skills/github-gh
 ```
 
 Or share one checkout between Codex and Claude Code:
 
 ```bash
-git clone https://github.com/full-chaos/github-skill.git ~/.claude/skills/github-gh
+git clone https://github.com/full-chaos/github-gh.git ~/.claude/skills/github-gh
 ln -s ~/.claude/skills/github-gh ~/.codex/skills/github-gh
 ```
 
@@ -76,7 +76,7 @@ prompt; give the agent filesystem-read access to the skill directory so it can p
 
 ```python
 from pathlib import Path
-SKILL_ROOT = Path("/path/to/github-skill")
+SKILL_ROOT = Path("/path/to/github-gh")
 system_prompt += "\n\n" + (SKILL_ROOT / "SKILL.md").read_text()
 # Then expose SKILL_ROOT to the agent via a file-read tool.
 ```
@@ -118,7 +118,7 @@ For one-command install, also publish a `marketplace.json` (in this repo or a
 registry repo) listing this plugin. Then users run:
 
 ```
-/plugin marketplace add full-chaos/github-skill
+/plugin marketplace add full-chaos/github-gh
 /plugin install github-gh
 ```
 
