@@ -29,9 +29,13 @@ gh api -X POST repos/ORG/REPO/issues/42/labels -f labels[]="bug"
 ## Create PR from current branch (one command)
 `gh pr create` pushes the current branch to `origin` if it has no upstream, then opens the PR — no separate `git push -u` needed.
 ```bash
-gh pr create --title "fix: null user in auth middleware" --body "Closes #42"
+# Fastest path: autofill title/body from commits
+gh pr create --fill           # title = last commit subject, body = its message
+gh pr create --fill-first     # use FIRST commit on the branch (good for stacked work)
+gh pr create --fill-verbose   # title from first commit, body = all commit messages
 
-# Short flags
+# Explicit title/body
+gh pr create --title "fix: null user in auth middleware" --body "Closes #42"
 gh pr create -t "feat: add retry policy" -b "Adds exponential backoff."
 
 # Multi-line body via heredoc
@@ -45,7 +49,16 @@ gh pr create -t "feat: X" -b "$(cat <<'EOF'
 EOF
 )"
 ```
-Useful flags: `-B main` (base branch), `-d` (draft), `-a @me` (assign), `-l bug` (label), `-w` (open in browser after).
+Useful flags: `-B main` (base branch), `-d` (draft), `-a @me` (assign), `-l bug` (label), `-w` (open in browser after). Flip a draft to ready with `gh pr ready`.
+
+## Queue auto-merge once CI passes
+```bash
+# GitHub holds the PR until required checks pass, then squash-merges and deletes the branch.
+gh pr merge --auto --squash --delete-branch
+
+# Cancel a queued auto-merge
+gh pr merge --disable-auto
+```
 
 ## Check GitHub Actions / CI status (one command)
 `gh pr checks` reports the state of every check run on a PR. Combine `--json` + `--jq` to get exactly what you need without piping through `jq` separately.
@@ -76,5 +89,34 @@ Available `--json` fields: `bucket`, `completedAt`, `description`, `event`, `lin
 When you need logs or step-level detail (not just the PR rollup):
 ```bash
 gh run list -R ORG/REPO --limit 5 --json databaseId,name,status,conclusion,headBranch
-gh run view <run-id> -R ORG/REPO --log-failed
+gh run view <run-id> -R ORG/REPO --log-failed   # ONLY failed step logs — huge context win vs --log
+gh run watch <run-id> --exit-status              # block on this run; nonzero exit if failed
+gh run rerun <run-id> --failed                   # rerun only failed jobs, not the whole workflow
+```
+
+## Pagination (don't roll your own loop)
+```bash
+# REST — walks all pages automatically
+gh api --paginate repos/ORG/REPO/issues
+
+# Combine concatenated objects into ONE JSON array
+gh api --paginate --slurp repos/ORG/REPO/issues
+
+# GraphQL — placeholder MUST be named $endCursor
+gh api graphql --paginate -f query='
+  query($endCursor: String) {
+    repository(owner: "ORG", name: "REPO") {
+      issues(first: 100, after: $endCursor) {
+        pageInfo { hasNextPage endCursor }
+        nodes { number title }
+      }
+    }
+  }'
+```
+
+## Sticky defaults (stop typing `-R`)
+```bash
+gh repo set-default ORG/REPO   # per working tree
+export GH_REPO=ORG/REPO        # per shell session, overrides set-default
+export GH_PAGER=cat            # disable interactive pager in scripts
 ```
